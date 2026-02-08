@@ -22,33 +22,37 @@ import { errorHandler, notFound } from './middleware/error.middleware.js';
 const app = express();
 
 // Middleware
-// CORS configuration - allow frontend URL from environment or all origins in development
+// CORS configuration - allow frontend URL from environment or allow-all for testing
+const allowedOrigins = [
+  'https://hostelmanagement-eta.vercel.app',
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) {
       return callback(null, true);
     }
-    
-    const frontendUrl = process.env.FRONTEND_URL;
-    
-    // In production, check against FRONTEND_URL
-    if (frontendUrl && process.env.NODE_ENV === 'production') {
-      // Extract base domain from FRONTEND_URL (e.g., https://your-app.vercel.app)
-      const frontendBase = frontendUrl.replace(/^https?:\/\//, '').split('/')[0];
-      const originBase = origin.replace(/^https?:\/\//, '').split('/')[0];
-      
-      // Allow exact match or Vercel preview URLs (contain vercel.app)
-      if (originBase === frontendBase || originBase.includes('vercel.app')) {
-        return callback(null, true);
-      }
-      
-      // Reject if doesn't match
-      return callback(new Error('Not allowed by CORS'));
+
+    if (process.env.CORS_ALLOW_ALL === 'true') {
+      return callback(null, true);
     }
-    
-    // In development, allow all origins
-    return callback(null, true);
+
+    const originBase = origin.replace(/^https?:\/\//, '').split('/')[0];
+    const allowed = allowedOrigins.some((url) => {
+      const base = url.replace(/^https?:\/\//, '').split('/')[0];
+      return base === originBase || (base.includes('vercel.app') && originBase.includes('vercel.app'));
+    });
+
+    if (allowed) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
