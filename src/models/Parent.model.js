@@ -31,7 +31,6 @@ const parentSchema = new mongoose.Schema(
 
 // Index for efficient lookups
 parentSchema.index({ studentId: 1 });
-parentSchema.index({ userId: 1 }, { unique: true });
 
 const Parent = mongoose.model('Parent', parentSchema);
 

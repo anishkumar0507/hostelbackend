@@ -37,8 +37,6 @@ const studentLocationSchema = new mongoose.Schema(
   }
 );
 
-studentLocationSchema.index({ studentId: 1 });
-
 const StudentLocation = mongoose.model('StudentLocation', studentLocationSchema);
 
 export default StudentLocation;
